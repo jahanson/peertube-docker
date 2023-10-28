@@ -10,8 +10,8 @@ on:
     paths: [".github/workflows/publish-containers.yaml"]
 
 jobs:
-  setup-containers:
-    name: Setup Containers
+  publish-containers:
+    name: Publish Containers
     runs-on: ubuntu-latest
     steps:
       - name: Login to GitHub Container Registry
@@ -22,26 +22,25 @@ jobs:
           password: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Download latest release
+        id: latest-release
         uses: robinraju/release-downloader@efa4cd07bd0195e6cc65e9e30c251b49ce4d3e51 # v1.8
         with:
           repository: Chocobozzz/PeerTube
           latest: true
           fileName: "*.zip"
-          extract: true
-  publish-containers:
-    name: Publish Containers
-    runs-on: ubuntu-latest
-    needs: ["setup-containers"]
-    steps:
-      - name: Output tag name
-        env:
-          TAG_NAME: ${{needs.setup-containers.outputs.tag_name}}
+          extract: false
+
+      - name: Extract Peertube release
         run: |
-          echo "Tag name: $TAG_NAME"
+          unzip peertube-${{steps.latest-release.outputs.tag_name}}.zip
+          rm peertube-${{steps.latest-release.outputs.tag_name}}.zip
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v2.7.0
         with:
-          context: ${{ github.workspace }}/peertube-${{steps.setup-containers.outputs.tag_name}}/dist
-          dockerfile: ${{ github.workspace }}/Dockerfile
+          # context: ${{ github.workspace }}/peertube-${{steps.latest-release.outputs.tag_name}}
+          context: .
+          dockerfile: Dockerfile
           push: true
-          tags: peertube-server:${{steps.setup-containers.outputs.tag_name}}
+          tags: ghcr.io/jahanson/peertube-server:${{steps.latest-release.outputs.tag_name}}
+      

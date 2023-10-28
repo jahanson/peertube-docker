@@ -1,7 +1,18 @@
+# Build stage
+FROM node:20-bookworm-slim AS build
+
+RUN npm install -g concurrently typescript
+WORKDIR /app
+
+COPY peertube-*/ .
+
+RUN yarn install --production --pure-lockfile --network-timeout 1200000
+RUN npm run build
+RUN yarn cache clean 
+RUN rm -r ./node_modules ./client/node_modules ./client/.angular 
+
 # Production stage
 FROM node:20-bookworm-slim
-LABEL org.opencontainers.image.source https://github.com/jahanson/peertube-docker
-LABEL org.opencontainers.image.description PeerTube API Server no nginx, just node.
 
 # Install dependencies
 RUN apt update \
@@ -16,13 +27,11 @@ RUN groupadd -r peertube \
 # Install modules and dependencies
 WORKDIR /app
 
-COPY --chown=peertube:peertube peertube-*/ .
-
-# RUN chown -R peertube:peertube .
+COPY --from=build /app/dist .
+RUN chown -R peertube:peertube .
 
 RUN mkdir /data /config
 RUN chown -R peertube:peertube /data /config
-COPY --chown=peertube:peertube peertube-*/config/default.yaml ./config/default.yaml
 
 ENV NODE_ENV production
 ENV NODE_CONFIG_DIR /app/config:/app/support/docker/production/config:/config
@@ -31,7 +40,7 @@ ENV PEERTUBE_LOCAL_CONFIG /config
 VOLUME /data
 VOLUME /config
 
-COPY --chown=peertube:peertube peertube-*/support/docker/production/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY --from=build /app/support/docker/production/entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 
 # Expose API and RTMP
