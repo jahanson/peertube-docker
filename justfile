@@ -1,6 +1,6 @@
 # Runs publish-containers workflow job
 act:
-  act -j publish-containers -b --secret-file .github/workflows/.env
+  act -j publish-containers -b --secret-file .env
 # Docker build
 db:
   docker build . --no-cache
