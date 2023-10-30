@@ -37,8 +37,14 @@ jobs:
           unzip peertube-${{steps.latest-release.outputs.tag_name}}.zip
           rm peertube-${{steps.latest-release.outputs.tag_name}}.zip
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and push Docker image
-        uses: docker/buildx-build-action@v1
+        uses: docker/build-push-action@v5
         with:
           context: .
           dockerfile: Dockerfile
