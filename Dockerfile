@@ -24,6 +24,9 @@ RUN mkdir /data /config
 RUN chown -R peertube:peertube /data /config
 COPY --chown=peertube:peertube peertube-*/config/default.yaml ./config/default.yaml
 
+RUN yarn install --production --pure-lockfile --network-timeout 1200000
+RUN yarn cache clean 
+
 ENV NODE_ENV production
 ENV NODE_CONFIG_DIR /app/config:/app/support/docker/production/config:/config
 ENV PEERTUBE_LOCAL_CONFIG /config
@@ -31,7 +34,7 @@ ENV PEERTUBE_LOCAL_CONFIG /config
 VOLUME /data
 VOLUME /config
 
-COPY --chown=peertube:peertube peertube-*/support/docker/production/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY peertube-*/support/docker/production/entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 
 # Expose API and RTMP
