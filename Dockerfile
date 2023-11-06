@@ -20,8 +20,8 @@ COPY --chown=peertube:peertube peertube-*/ .
 
 # RUN chown -R peertube:peertube .
 
-RUN mkdir -p /app/data /app/config 
-RUN chown -R peertube:peertube /app/data /app/config
+RUN mkdir /data /config 
+RUN chown -R peertube:peertube /data /config
 COPY --chown=peertube:peertube peertube-*/config/default.yaml ./config/default.yaml
 
 RUN yarn install --production --pure-lockfile --network-timeout 1200000
@@ -31,8 +31,8 @@ ENV NODE_ENV production
 ENV NODE_CONFIG_DIR /app/config:/app/support/docker/production/config:/config
 ENV PEERTUBE_LOCAL_CONFIG /config
 
-VOLUME /app/data
-VOLUME /app/config
+VOLUME /data
+VOLUME /config
 
 COPY peertube-*/support/docker/production/entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
