@@ -20,7 +20,7 @@ COPY --chown=peertube:peertube peertube-*/ .
 
 # RUN chown -R peertube:peertube .
 
-RUN mkdir /app/data /app/config 
+RUN mkdir -p /app/data /app/config 
 RUN chown -R peertube:peertube /app/data /app/config
 COPY --chown=peertube:peertube peertube-*/config/default.yaml ./config/default.yaml
 
